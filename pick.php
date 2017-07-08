@@ -10,15 +10,13 @@
 
   if ($right == $total) {
     $text = "Поздравляю, $name \nВы успешно прошли тестирование \nи получаете звание $titul";
-    $textColor=imagecolorallocate($image, 123, 104, 238);
   }
   else {
     $text = "Сожалеем, $name \n Тестирование не пройдено";
-    $textColor=imagecolorallocate($image, 139, 0, 0);
   }
 
-  $img  = new Gd(400, 300, $text, $textColor);
-  $img->generatge;
+  $img  = new Gd(600, 600, $text);
+  $img->generate();
  /* unset($_SESSION['data']);
   unset($_SESSION['titul']);
   unset($_SESSION['name']);
