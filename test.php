@@ -2,11 +2,8 @@
 include_once __DIR__.DIRECTORY_SEPARATOR.'lib.php';
 
 readDest($dest);
-$jsonData=[];
-$nom=1;
-$results=[]; // массив с результатами
 session_start();
-var_dump($_SESSION);
+
 // обработка get-запроса
 if (! empty($_GET['test'])) {
   $result=array_search($_GET['test'].".json", $filelist, true);
@@ -21,8 +18,9 @@ if (! empty($_GET['test'])) {
       echo "Ошибка чтения json файла ".json_last_error(); 
     }
   } 
+
+  $_SESSION['titul'] = $jsonData[0]['титул'];
   $nametest=$jsonData[0]['Название'];
-  $titul=$jsonData[0]['титул'];
   $jsonData=$jsonData[0]['Вопросы'];
 } else {
   header($_SERVER['SERVER_PROTOCOL'].'404 Not Found'); 
@@ -30,48 +28,7 @@ if (! empty($_GET['test'])) {
   exit();
 }
 
-// обработка post-запроса
-if ($_POST) {
-  
-  echo "<pre>";
-  print_r($_POST);
-  echo "</pre>";
-  
-  echo "<pre>";
-  print_r($_REQUEST);
-  echo "</pre>";
-  
-  $right_answers=0;
-  $total_questions=0;
-  if (! empty($_POST['fio'])) {
-    $name=$_POST['fio'];
-  }
-  foreach($jsonData as $key => $question) { // перебираем вопросы, есть ли ответ на вопрос?
-    $total_questions++;
-    if (! array_key_exists($key, $_POST)) {
-      $results[]="$nom. Ответ не предоставлен. Правильный ответ: ".$jsonData[$key]['Ответ'];
-      continue;
-    }
-    if (is_array($_POST[$key])) {
-      $ans=implode($_POST[$key],","); // чекбоксы собираем из массива
-    } else {
-      $ans=$_POST[$key]; // радиокнопки - обычное значение
-    }
-    if ($jsonData[$key]['Ответ'] != $ans) {
-      $results[]="$nom. Ответ неверный. Ваш ответ: $ans. Правильный ответ: ".$jsonData[$key]['Ответ'];
-    } else {
-      $results[]="$nom. Ответ $ans верный";
-      $right_answers++;
-    }
-    $nom++;
-  }
-  $_SESSION['total'] = $total_questions;
-  $_SESSION['right'] = $right_answers;
-  $_SESSION['name'] = $name;
-  $_SESSION['titul'] = $titul;
-
-  echo '<div class="res"><pre>'.implode($results,"\n").'</pre></div>';
-}
+$_SESSION['data']=$jsonData;
 
 // заполнение формы в HTML
 function fillForm() {
@@ -119,6 +76,7 @@ function fillForm() {
   <title><?=$nametest?></title>
   <meta charset="utf-8">
   <link rel="stylesheet" href="gentest.css">
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js"></script>
 </head>
 <body>
    <?php echo getMainMenu(); ?>
@@ -128,7 +86,7 @@ function fillForm() {
       <div class='output'></div>
    </fieldset>
    </form>
-   <form action="" method="POST" enctype="application/json" class="mainform"> 
+   <form action="fileeeeeeeeeee.php" method="POST" enctype="application/json" class="mainform"> 
      <fieldset>
        <legend><?=$nametest?></legend>
        <label>Представьтесь, пожалуйста: <input type="text" name="fio" required></label><br/><br/>
@@ -142,49 +100,32 @@ function fillForm() {
     const btn = document.querySelector("[type=submit]");
     const ans = document.querySelectorAll("[type=radio], [type=checkbox]");
     const quests=document.getElementsByClassName('question');
-    const output=document.querySelector('div.output');
-
-    btn.addEventListener('click', chkForm);
+  
     Array.from(ans).forEach(a => {a.addEventListener('change',unsetErr)});
 
-    //--проверка формы средствами JS:
-    function chkForm(event) {
-      event.preventDefault();
-      const fldset=document.querySelector('fieldset.hidden');
-      if (fldset) { fldset.classList.remove('hidden'); }
-      Array.from(quests).forEach(quest => chkElement(quest)); // проверяем каждый вопрос, выбран ли ответ
-      const errEl=document.getElementsByClassName('error');
-      
-      if (errEl.length > 0) {
-        output.textContent = "Внимание! Не выбраны ответы для " + errEl.length + " вопр.(выделены красным цветом). Заполните всю форму.";
-        event.preventDefault();
-        return;
-      } else { 
-        const form=document.getElementsByClassName('mainform')[0];
-        const xhr = new XMLHttpRequest();
-        const formData = new FormData(form);
-        xhr.open(form.getAttribute('method'), form.getAttribute('action'), false); // сделаем пока синхронный :)
-        xhr.setRequestHeader('Content-Type', form.getAttribute('enctype'));
-        xhr.send(formData);
-      }
-
-      if (Array.from(output.children).length == 0) {
-        output.textContent='';
-        const fragment = document.createDocumentFragment();
-        const img = document.createElement('img');
-        const br = document.createElement('br');
-        const a = document.createElement('a');
-        img.src='pick.php';
-        a.setAttribute('target','_blank');
-        a.textContent='';
-        a.appendChild(img);
-        fragment.appendChild(br);
-        fragment.appendChild(a);
-        output.appendChild(fragment);
-      }
-      const res=document.querySelector('.res');
-      output.appendChild(res);
-    }
+    $(document).ready(function(){
+      $('.mainform').submit(function(event){
+          event.preventDefault();
+          $('.output').html = '';
+          $('fieldset.hidden').removeClass('hidden');
+          $('.question').each(function(i, val) { chkElement(val); }); 
+          $('.error').each(function(i, val) { 
+            $('.output').html('Внимание! Не выбраны ответы на некоторые вопросы. Заполните всю форму перед отправкой.');
+            return;
+          })
+          if ($('.output').html() != '') { return false; };
+          $.ajax({
+            url: 'file.php',
+            type:'post',
+            data: $('.mainform').serialize(),
+            success: function(result){
+                $('.output').children().each(function(i, elem) { elem.detach(); });
+                $('.output').html(result);
+                $('.output').append("<a target=_blank><img src='pick.php'></a>");
+            }
+          });
+      });
+    });
 
     function unsetErr(event) {
       event.target.parentElement.parentElement.previousElementSibling.classList.remove('error');

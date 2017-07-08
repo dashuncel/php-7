@@ -4,6 +4,7 @@ $dest="tests".DIRECTORY_SEPARATOR; // директория сфайлами те
 $pattern="/^[0-9a-z]*.json$/"; // маска валидных файлов
 $filelist=[]; // список файлов
 $dataForPick=[];
+$jsonData=[];
 
 // функция читает директорию с тестами
 function readDest($destination) {
