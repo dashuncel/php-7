@@ -121,7 +121,7 @@ function fillForm() {
             success: function(result){
                 $('.output').children().each(function(i, elem) { elem.detach(); });
                 $('.output').html(result);
-                $('.output').append("<a target=_blank><img src='pick.php'></a>");
+                $('.output').append("<a target=_blank href='big_pick.php'><img src='pick.php'></a>");
             }
           });
       });

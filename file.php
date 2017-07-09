@@ -31,9 +31,15 @@ if ($_POST) {
     }
     $nom++;
   }
-  $_SESSION['total'] = $total_questions;
-  $_SESSION['right'] = $right_answers;
-  $_SESSION['name'] = $name;
+
+  $titul =  $_SESSION['titul'];
+  if ($right_answers == $total_questions) {
+    $text = "Поздравляю, $name! \nВы успешно прошли тестирование \nи получаете звание \n$titul";
+  }
+  else {
+    $text = "Сожалеем, $name \n Тестирование не пройдено";
+  }
+  $_SESSION['text'] = $text;
 
   echo '<div class="res"><pre>'.implode($results,"\n").'</pre></div>';
 }
