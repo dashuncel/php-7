@@ -26,7 +26,7 @@ class Gd
         // вычисляем размер щрифта:
         // позиционирование текста в рамке:  
         $txt=explode("\n", $this->text);
-        $px = ($this->width - 7*strlen($txt[0])) / strlen($txt[0]); // размер шрифта
+        $px = ($this->width - 8*strlen($txt[0])) / strlen($txt[0]); // размер шрифта
         $pos_y = ($this->height - ($px + 10) * count($txt)) / 2;      // позиция по вертикали
 
         foreach ($txt as $piece) {
@@ -34,7 +34,7 @@ class Gd
           imagettftext($destImg, $px, 0, $pos_x, $pos_y, $textColor, $font, $piece);
           $pos_y += $px + 10;
         } 
-
+/*
          //--гербовая печать:
         $stamp = imagecreatetruecolor($this->width / 10 , $this->width / 10);
         $stampSrc = imageCreateFromPng(__DIR__.DIRECTORY_SEPARATOR."img".DIRECTORY_SEPARATOR."stamp.png");
@@ -44,7 +44,7 @@ class Gd
         $pos_y = $this->height - 2 * imageSY($stamp); // позиция по горизонтали
 
         imagecopy($destImg, $stamp, $pos_x, $pos_y, 0,0, imagesx($stamp), ImageSY($stamp));
-
+*/
         header('Content-type: image/png');
         imagePng($destImg);
         imagedestroy($destImg);
